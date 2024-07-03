@@ -1,0 +1,1967 @@
+<!-- addproduct.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Add New Product";
+   String PAGE = "assets";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+int is_adminlogin = (int)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String id = request.getParameter("id");
+String psubmit = request.getParameter("psubmit");
+String pname = "";
+String pdop = "";
+String pava = "";
+String ptotal = "";
+String poriginalcost = "";
+String psellingcost = "";
+
+if(is_adminlogin == 1){
+   aEmail = (String)session.getAttribute("aEmail");
+} else {
+   response.sendRedirect("login.jsp");
+}
+if(!(psubmit==null)){
+  pname = request.getParameter("pname");
+  pdop = request.getParameter("pdop");
+  pava = request.getParameter("pava");
+  ptotal = request.getParameter("ptotal");
+  poriginalcost = request.getParameter("poriginalcost");
+  psellingcost = request.getParameter("psellingcost");
+ if((pname.equals("")) || (pdop.equals("")) || (pava.equals("")) || (ptotal.equals("")) || (poriginalcost.equals("")) || (psellingcost.equals(""))){
+  msg = "<div class='alert alert-warning col-sm-6 ml-5 mt-2' role='alert'> Fill All Fileds </div>";
+ } else {
+   db = new dbConnection();
+   sql = "INSERT INTO assets_tb (pname, pdop, pava, ptotal, poriginalcost, psellingcost) VALUES ('"+pname+"','"+pdop+"','"+pava+"','"+ptotal+"','"+poriginalcost+"','"+psellingcost+"')";
+   int i = db.indata(sql);
+   db.closeConnection();
+  if(i==1000){
+    msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'> Unable to Add </div>";
+  } else {
+    msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'> Added Successfully </div>";
+  }
+ }
+}
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-6 mt-5 mx-3 jumbotron">
+  <h3 class="text-center">Add New Product</h3>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="pname">Product Name</label>
+      <input type="text" class="form-control" id="pname" name="pname">
+    </div>
+    <div class="form-group">
+      <label for="pdop">Date of Purchase</label>
+      <input type="date" class="form-control" id="pdop" name="pdop">
+    </div>
+    <div class="form-group">
+      <label for="pava">Available</label>
+      <input type="text" class="form-control" id="pava" name="pava" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="ptotal">Total</label>
+      <input type="text" class="form-control" id="ptotal" name="ptotal" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="poriginalcost">Original Cost Each</label>
+      <input type="text" class="form-control" id="poriginalcost" name="poriginalcost" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="psellingcost">Selling Cost Each</label>
+      <input type="text" class="form-control" id="psellingcost" name="psellingcost" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="psubmit" name="psubmit">Submit</button>
+      <a href="assets.jsp" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<!-- Only Number for input fields -->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script>
+
+<%@ include file = "includes/footer.jsp" %><!-- assets.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Assets";
+   String PAGE = "assets";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String id = request.getParameter("id");
+String delete = request.getParameter("delete");
+if(is_adminlogin == null){
+   response.sendRedirect("login.jsp");
+ } else {
+   aEmail = (String)session.getAttribute("aEmail");
+ }
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-9 col-md-10 mt-5 text-center">
+ <p class="bg-dark text-white p-2">Product/Part Details</p>
+ <table class="table">
+   <thead>
+    <tr>
+     <th scope="col">Product ID</th>
+     <th scope="col">Name</th>
+     <th scope="col">DOP</th>
+     <th scope="col">Available</th>
+     <th scope="col">Total</th>
+     <th scope="col">Original Cost Each</th>
+     <th scope="col">Selling Cost Each</th>
+     <th scope="col">Action</th>
+    </tr>
+   </thead>
+   <tbody>
+ <%
+  sql = "SELECT * FROM assets_tb"; 
+  db = new dbConnection();
+  rs = db.data(sql);
+  while(rs.next()){
+     int pid = rs.getInt("pid");
+     String pname = rs.getString("pname");
+     String pdop = rs.getString("pdop");
+     String pava = rs.getString("pava");
+     String ptotal = rs.getString("ptotal");
+     String poriginalcost = rs.getString("poriginalcost");
+     String psellingcost = rs.getString("psellingcost");
+ %>
+      <tr>
+       <td><%=pid%></td>
+       <td><%=pname%></td>
+       <td><%=pdop%></td>
+       <td><%=pava%></td>
+       <td><%=ptotal%></td>
+       <td>INR <%=poriginalcost%></td>
+       <td>INR <%=psellingcost%></td>
+       <td>
+        <form action="editproduct.jsp" class="d-inline" method="POST">
+         <input type="hidden" name="id" value="<%=pid%>"><button type="submit" class="btn btn-info mr-3" name="edit" value="Edit"><i class="fas fa-pen"></i></button>
+        </form>
+        <form action="" method="POST" class="d-inline">
+        <input type="hidden" name="id" value="<%=pid%>"><button type="submit" class="btn btn-secondary mr-3" name="delete" value="Delete"><i class="far fa-trash-alt"></i></button>
+       </form>
+       <form action="sellproduct.jsp" class="d-inline" method="POST">
+         <input type="hidden" name="id" value="<%=pid%>"><button type="submit" class="btn btn-warning mr-3" name="issue" value="Issue"><i class="fas fa-handshake"></i></button>
+        </form>
+       </td>
+      </tr>
+<%
+  }
+  db.closeConnection();
+ %>
+</tbody>
+</table>
+</div>
+<%
+ if(!(delete==null)){
+ sql = "DELETE FROM assets_tb WHERE pid = " + "\"" + id + "\"";
+ db = new dbConnection();
+ int i = db.indata(sql);
+ db.closeConnection();
+ if(i==1000){
+   out.println("Unable to Delete");
+ } else {
+    response.sendRedirect("assets.jsp");
+ }
+ }
+%>
+  </div> <!-- End Row -->
+  <div class="float-right"><a href="addproduct.jsp" class="btn btn-danger"><i class="fas fa-plus fa-2x"></i></a></div>
+ </div> <!-- End Container -->
+
+ <!-- JavaScript -->
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/popper.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/all.min.js"></script>
+ </body>
+</html><!-- assignworkform.jsp -->
+<%
+String view = request.getParameter("view");
+String close = request.getParameter("close");
+String id = request.getParameter("id");
+String assign = request.getParameter("assign");
+String msg = "";
+String rid = "";
+String rinfo = "";
+String rdesc = "";
+String rname = "";
+String radd1 = "";
+String radd2 = "";
+String rcity = "";
+String rstate = "";
+String rzip = "";
+String remail = "";
+String rmobile = "";
+String rassigntech = "";
+String rdate = "";
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+ if(!(view == null)){
+  sql = "SELECT * FROM submitrequest_tb WHERE request_id = " + "\"" + id + "\"";
+  db = new dbConnection();
+  rs = db.data(sql);
+  if(rs.next()){
+    rid = rs.getString("request_id");
+    rinfo = rs.getString("request_info");
+    rdesc = rs.getString("request_desc");
+    rname = rs.getString("requester_name");
+    radd1 = rs.getString("requester_add1");
+    radd2 = rs.getString("requester_add1");
+    rcity = rs.getString("requester_city");
+    rstate = rs.getString("requester_state");
+    rzip = rs.getString("requester_zip");
+    remail = rs.getString("requester_email");
+    rmobile = rs.getString("requester_mobile");
+    rdate = rs.getString("request_date");
+  }
+  db.closeConnection();
+ }
+ if(!(close == null)){
+  sql = "DELETE FROM submitrequest_tb WHERE request_id  = " + "\"" + id + "\"";
+  db = new dbConnection();
+  int i = db.indata(sql);
+  if(i==1000){
+   del = "<div class='alert alert-danger col-sm-6 mt-2'>Unable to Delete</div>";
+  } else {
+    response.sendRedirect("request.jsp");
+
+  }
+  db.closeConnection();
+ }
+ if(!(assign == null)){
+  rid = request.getParameter("request_id");
+  rinfo = request.getParameter("request_info");
+  rdesc = request.getParameter("requestdesc");
+  rname = request.getParameter("requestername");
+  radd1 = request.getParameter("address1");
+  radd2 = request.getParameter("address2");
+  rcity = request.getParameter("requestercity");
+  rstate = request.getParameter("requesterstate");
+  rzip = request.getParameter("requesterzip");
+  remail = request.getParameter("requesteremail");
+  rmobile = request.getParameter("requestermobile");
+  rassigntech = request.getParameter("assigntech");
+  rdate = request.getParameter("inputdate");
+
+  if((rid.equals("")) || (rinfo.equals("")) || (rinfo.equals("")) || (rdesc.equals("")) || (radd1.equals("")) || (radd2.equals("")) || (rcity.equals("")) || (rstate.equals("")) || (rzip.equals("")) || (rzip.equals("")) || (rmobile.equals("")) || (rassigntech.equals("")) || (rdate.equals(""))){
+   msg = "<div class='alert alert-warning col-sm-6 ml-5 mt-2'>Fill All Fileds</div>";
+  } else {
+   sql = "INSERT INTO assignwork_tb (request_id, request_info, request_desc, requester_name, requester_add1, requester_add2, requester_city, requester_state, requester_zip, requester_email, requester_mobile, assign_tech, assign_date) VALUES ('"+rid+"','"+rinfo+"','"+rdesc+"','"+rname+"','"+radd1+"','"+radd2+"','"+rcity+"','"+rstate+"','"+rzip+"','"+remail+"','"+rmobile+"','"+rassigntech+"','"+rdate+"')";
+    db = new dbConnection();
+    int i = db.indata(sql);
+   if(i==1){
+    msg = "<div class='alert alert-success col-sm-6 mt-2'>Work Assigned Successfully</div>";
+   } else {
+    msg = "<div class='alert alert-danger col-sm-6 mt-2'>Unable to Assign Work</div>";
+   }
+   db.closeConnection();
+  }
+ }
+ %>
+
+<div class="col-sm-5 mt-5 jumbotron"> <!-- Start Assigned Work 3rd Column-->
+ <form action="" method="POST">
+   <h5 class="text-center">Assign Work Order Request</h5>
+   <div class="form-group">
+     <label for="request_id">Request ID</label>
+     <input type="text" class="form-control" id="request_id" name="request_id" value="<%if(!(rid.equals(""))){out.println(rid);} %>" readonly>
+   </div>
+   <div class="form-group">
+     <label for="request_info">Request Info</label>
+     <input type="text" class="form-control" id="request_info" name="request_info" value="<%if(!(rinfo.equals(""))){out.println(rinfo);} %>">
+   </div>
+   <div class="form-group">
+     <label for="requestdesc">Description</label>
+     <input type="text" class="form-control" id="requestdesc" name="requestdesc" value="<%if(!(rdesc.equals(""))){out.println(rdesc);} %>">
+   </div>
+   <div class="form-group">
+     <label for="requestername">Name</label>
+     <input type="text" class="form-control" id="requestername" name="requestername" value="<%if(!(rname.equals(""))){out.println(rname);} %>">
+   </div>
+   <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="address1">Address Line 1</label>
+      <input type="text" class="form-control" id="address1" name="address1" value="<%if(!(radd1.equals(""))){out.println(radd1);} %>">
+    </div>
+    <div class="form-group col-md-6">
+      <label for="address2">Address Line 2</label>
+      <input type="text" class="form-control" id="address2" name="address2" value="<%if(!(radd2.equals(""))){out.println(radd2);} %>">
+    </div>
+   </div>
+   <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="requestercity">City</label>
+      <input type="text" class="form-control" id="requestercity" name="requestercity" value="<%if(!(rcity.equals(""))){out.println(rcity);} %>">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="requesterstate">State</label>
+      <input type="text" class="form-control" id="requesterstate" name="requesterstate" value="<%if(!(rstate.equals(""))){out.println(rstate);} %>">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="requesterzip">Zip</label>
+      <input type="text" class="form-control" id="requesterzip" name="requesterzip" value="<%if(!(rzip.equals(""))){out.println(rzip);} %>" onkeypress="isInputNumber(event)">
+    </div>
+   </div>
+   <div class="form-row">
+    <div class="form-group col-md-8">
+      <label for="requesteremail">Email</label>
+      <input type="email" class="form-control" id="requesteremail" name="requesteremail" value="<%if(!(remail.equals(""))){out.println(remail);} %>">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="requestermobile">Mobile</label>
+      <input type="text" class="form-control" id="requestermobile" name="requestermobile" value="<%if(!(rmobile.equals(""))){out.println(rmobile);} %>" onkeypress="isInputNumber(event)">
+    </div>
+   </div>
+   <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="assigntech">Assign to Technician</label>
+      <input type="text" class="form-control" id="assigntech" name="assigntech">
+    </div>
+    <div class="form-group col-md-6">
+      <label for="inputDate">Date</label>
+      <input type="date" class="form-control" id="inputDate" name="inputdate">
+    </div>
+   </div>
+   <div class="float-right">
+    <button type="submit" class="btn btn-success" name="assign">Assign</button>
+    <button type="reset" class="btn btn-secondary">Reset</button>
+   </div>
+ </form>
+ <%if(!(msg.equals(""))){out.println(msg);}%>
+</div> <!-- End Assigned Work 3rd Column-->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script><!-- changepass.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Change Password";
+   String PAGE = "changepass";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String passmsg="";
+
+String passupdate = request.getParameter("passupdate");
+String aPassword = request.getParameter("aPassword");
+
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+
+if(!(passupdate==null)){
+ if(aPassword.equals("")){
+  passmsg = "<div class='alert alert-warning col-sm-6 mt-2'>Fill All Fields</div>";
+ } else {
+  sql = "UPDATE adminlogin_tb SET a_password = " + "\"" + aPassword + "\"" + " WHERE a_email = " + "\"" + aEmail + "\"";
+  db = new dbConnection();
+  int i = db.indata(sql);
+  db.closeConnection();
+  if(i == 1000){
+    passmsg = "<div class='alert alert-danger col-sm-6 mt-2'>Unable to Update</div>";
+  } else {
+    passmsg = "<div class='alert alert-success col-sm-6 mt-2'>Updated Successfully</div>";
+
+  }
+ }
+}
+%>
+<div class="col-sm-9 col-md-10"> <!-- Start Admin Change Password Form 2nd Column -->
+ <form class="mt-5 mx-5" action="" method="POST">
+  <div class="form-group">
+   <label for="inputEmail">Email</label>
+   <input type="email" class="form-control" id="inputEmail" value="<%=aEmail%>" readonly>
+  </div>
+  <div class="form-group">
+   <label for="inputnewpassword">New Password</label>
+   <input type="password" class="form-control" id="inputnewpassword" placeholder="New Password" name="aPassword">
+  </div>
+  <button type="submit" class="btn btn-danger mr-4 mt-4" name="passupdate">Update</button>
+  <button type="reset" class="btn btn-secondary mt-4">Reset</button>
+  <%if(!(passmsg.equals(""))){out.println(passmsg);}%>
+</form>
+</div> <!-- End Admin Change Password Form 2nd Column -->
+
+<%@ include file = "includes/footer.jsp" %><!-- dashboard.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Dashboard";
+   String PAGE = "dashboard";
+%>
+<%@ include file="includes/header.jsp"%>
+
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+int submitrequest = 0;
+int assignwork = 0;
+int totaltech = 0;
+if(is_adminlogin == null){
+   response.sendRedirect("login.jsp");
+} else {
+   aEmail = (String)session.getAttribute("aEmail");
+}
+sql = "SELECT max(request_id) as rd FROM submitrequest_tb";
+db = new dbConnection();
+rs = db.data(sql);
+if(rs.next()){
+   submitrequest = rs.getInt("rd");
+}
+
+sql = "SELECT max(rno) as aw FROM assignwork_tb";
+rs = db.data(sql);
+if(rs.next()){
+   assignwork = rs.getInt("aw");
+}
+
+sql = "SELECT count(*) as rowcount FROM technician_tb";
+totaltech = db.get_id(sql);
+%>
+   <div class="col-sm-9 col-md-10"> <!-- Start Dashboard 2nd Column -->
+    <div class="row text-center mx-5">
+     <div class="col-sm-4 mt-5">
+      <div class="card text-white bg-danger mb-3" style="max-width:18rem;">
+       <div class="card-header">Requests Received</div>
+       <div class="card-body">
+        <h4 class="card-title"><%=submitrequest%></h4>
+        <a class="btn text-white" href="request.jsp">View</a>
+       </div>
+      </div>
+     </div>
+     <div class="col-sm-4 mt-5">
+      <div class="card text-white bg-success mb-3" style="max-width:18rem;">
+       <div class="card-header">Assigned Work</div>
+       <div class="card-body">
+        <h4 class="card-title"><%=assignwork%></h4>
+        <a class="btn text-white" href="work.jsp">View</a>
+       </div>
+      </div>
+     </div>
+     <div class="col-sm-4 mt-5">
+      <div class="card text-white bg-info mb-3" style="max-width:18rem;">
+       <div class="card-header">No. of Technician</div>
+       <div class="card-body">
+        <h4 class="card-title"><%=totaltech%></h4>
+        <a class="btn text-white" href="technician.jsp">View</a>
+       </div>
+      </div>
+     </div>
+    </div>
+    <div class="mx-5 mt-5 text-center">
+     <p class="bg-dark text-white p-2">List of Requesters</p>
+     <% 
+         sql = "SELECT * FROM requesterlogin_tb";
+         rs = db.data(sql);
+         while(rs.next()){
+            int r_login_id = rs.getInt("r_login_id");
+            String r_name = rs.getString("r_name");
+            String r_email = rs.getString("r_email");
+      %>
+            <table class="table">
+               <thead>
+                  <tr>
+                  <th scope="col">Requester ID</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  </tr>
+               </thead>
+               <tbody>
+                     <tr>
+                     <td><%=r_login_id%></td>
+                     <td><%=r_name%></td>
+                     <td><%=r_email%></td>
+                     </tr>
+               </tbody>
+            </table>
+         <%
+         if(r_name == null){
+            out.println("0 results");
+            }
+         }
+         db.closeConnection();
+     %>
+    </div>
+   </div> <!-- End Dashboard 2nd Column -->
+<%@ include file = "includes/footer.jsp" %><!-- editemp.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Update Technician";
+   String PAGE = "technician";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String empupdate = request.getParameter("empupdate");
+String empName = request.getParameter("empName");
+String empCity = request.getParameter("empCity");
+String empMobile = request.getParameter("empMobile");
+String empEmail = request.getParameter("empEmail");
+String id = request.getParameter("id");
+String edit = request.getParameter("edit");
+String msg = "";
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+
+ if(!(empupdate == null)){
+  if((empName.equals("")) || (empCity.equals("")) || (empMobile.equals("")) || (empEmail.equals(""))){
+   msg = "<div class='alert alert-warning col-sm-6 ml-5 mt-2' role='alert'> Fill All Fileds </div>";
+  } else {
+    sql = "UPDATE technician_tb SET empName = " + "\"" + empName + "\"," + "empCity = " + "\"" + empCity + "\"," + "empMobile = "+ "\"" + empMobile + "\"," + "empEmail = " + "\"" + empEmail + "\"" + " WHERE empid = " + "\"" + id + "\"";
+    db = new dbConnection();
+    int i = db.indata(sql);
+    db.closeConnection();
+    if(i==1000){
+      msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'> Unable to Update </div>";
+      out.println("lan");
+    } else {
+      msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'> Updated Successfully </div>";
+    }
+  }
+  }
+ %>
+ 
+<div class="col-sm-6 mt-5  mx-3 jumbotron">
+  <h3 class="text-center">Update Technician Details</h3>
+  <%
+  sql = "SELECT * FROM technician_tb WHERE empid = " + "\"" + id + "\"";
+  db = new dbConnection();
+  rs = db.data(sql);
+  if(rs.next()){
+    empName = rs.getString("empName");
+    empCity = rs.getString("empCity");
+    empMobile = rs.getString("empMobile");
+    empEmail = rs.getString("empEmail");
+  }
+  db.closeConnection();
+  %>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="empId">Emp ID</label>
+      <input type="text" class="form-control" id="empId" name="id" value="<%if(!(id.equals(""))){out.println(id);} %>" readonly>
+    </div>
+    <div class="form-group">
+      <label for="empName">Name</label>
+      <input type="text" class="form-control" id="empName" name="empName" value="<%if(!(empName.equals(""))){out.println(empName);} %>">
+    </div>
+    <div class="form-group">
+      <label for="empCity">City</label>
+      <input type="text" class="form-control" id="empCity" name="empCity" value="<%if(!(empCity.equals(""))){out.println(empCity);} %>">
+    </div>
+    <div class="form-group">
+      <label for="empMobile">Mobile</label>
+      <input type="text" class="form-control" id="empMobile" name="empMobile" value="<%if(!(empMobile.equals(""))){out.println(empMobile);} %>"
+        onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="empEmail">Email</label>
+      <input type="email" class="form-control" id="empEmail" name="empEmail" value="<%if(!(empEmail.equals(""))){out.println(empEmail);} %>">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="empupdate" name="empupdate">Update</button>
+      <a href="technician.jsp" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<!-- Only Number for input fields -->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script>
+<%@ include file = "includes/footer.jsp" %><!-- editproduct.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Update Product";
+   String PAGE = "assets";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String id = request.getParameter("id");
+String pupdate = request.getParameter("pupdate");
+String msg = "";
+String pid = request.getParameter("id");
+String pname = "";
+String pdop = "";
+String pava = "";
+String ptotal = "";
+String poriginalcost = "";
+String psellingcost = "";
+String edit = request.getParameter("edit");
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+if(!(pupdate == null)){
+  pid = request.getParameter("pid");
+  pname = request.getParameter("pname");
+  pdop = request.getParameter("pdop");
+  pava = request.getParameter("pava");
+  ptotal = request.getParameter("ptotal");
+  poriginalcost = request.getParameter("poriginalcost");
+  psellingcost = request.getParameter("psellingcost");
+  if((pname.equals("")) || (pdop.equals("")) || (pava.equals("")) || (ptotal.equals("")) || (poriginalcost.equals("")) || (psellingcost.equals(""))){
+    msg = "<div class='alert alert-warning col-sm-6 mt-2' role='alert'> Fill All Fileds </div>";
+   } else {
+     sql = "UPDATE assets_tb SET pname = " + "\"" + pname + "\"," + "pdop = " + "\"" + pdop + "\"," + "pava = "+ "\"" + pava + "\"," + "ptotal = " + "\"" + ptotal + "\"," + "poriginalcost = " + "\"" + poriginalcost + "\"," + "psellingcost = " + "\"" + psellingcost + "\"" + " WHERE pid = " + "\"" +pid + "\"";
+     db = new dbConnection();
+     int i = db.indata(sql);
+     db.closeConnection();
+     if(i == 1000){
+      msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'> Unable to Update </div>";
+     } else {
+      msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'> Updated Successfully </div>";
+     }
+   }
+}
+%>
+
+<!-- Start 2nd Column -->
+<div class="col-sm-6 mt-5 mx-3 jumbotron">
+  <h3 class="text-center">Update Product Details</h3>
+  <%
+   if(!(edit==null)){
+   sql = "SELECT * FROM assets_tb WHERE pid = " + "\"" + pid + "\"";
+   db = new dbConnection();
+   rs = db.data(sql);
+     if(rs.next()){
+     pname = rs.getString("pname");
+     pdop = rs.getString("pdop");
+     pava = rs.getString("pava");
+     ptotal = rs.getString("ptotal");
+     poriginalcost = rs.getString("poriginalcost");
+     psellingcost = rs.getString("psellingcost");
+     db.closeConnection();
+   }
+  }
+  %>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="pid">Product ID</label>
+      <input type="text" class="form-control" id="pid" name="pid" value="<%=pid%>" readonly>
+    </div>
+    <div class="form-group">
+      <label for="pname">Product Name</label>
+      <input type="text" class="form-control" id="pname" name="pname" value="<%=pname%>">
+    </div>
+    <div class="form-group">
+      <label for="pdop">Date of Purchase</label>
+      <input type="date" class="form-control" id="pdop" name="pdop" value="<%=pdop%>">
+    </div>
+    <div class="form-group">
+      <label for="pava">Available</label>
+      <input type="text" class="form-control" id="pava" name="pava" onkeypress="isInputNumber(event)" value="<%=pava%>">
+    </div>
+    <div class="form-group">
+      <label for="ptotal">Total</label>
+      <input type="text" class="form-control" id="ptotal" name="ptotal" onkeypress="isInputNumber(event)" value="<%=ptotal%>">
+    </div>
+    <div class="form-group">
+      <label for="poriginalcost">Original Cost Each</label>
+      <input type="text" class="form-control" id="poriginalcost" name="poriginalcost" onkeypress="isInputNumber(event)" value="<%=poriginalcost%>">
+    </div>
+    <div class="form-group">
+      <label for="psellingcost">Selling Cost Each</label>
+      <input type="text" class="form-control" id="psellingcost" name="psellingcost" onkeypress="isInputNumber(event)" value="<%=psellingcost%>">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="pupdate" name="pupdate">Update</button>
+      <a href="assets.jsp" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<!-- Only Number for input fields -->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script>
+
+<%@ include file = "includes/footer.jsp" %><!-- editreqjsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Update Requester";
+   String PAGE = "requesters";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String r_name = request.getParameter("r_name");
+String r_login_id = request.getParameter("id");
+String r_email = request.getParameter("r_email");
+String edit = request.getParameter("edit");
+String requpdate = request.getParameter("requpdate");
+
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+%>
+ <!-- Start 2nd COlumn -->
+ <div class="col-sm-6 mt-5 mx-3 jumbotron">
+  <h3 class="text-center">Update Requester Details</h3>
+  <%
+   if(!(edit==null)){
+   sql = "SELECT * FROM requesterlogin_tb WHERE r_login_id = " + "\"" + r_login_id + "\"";
+   db = new dbConnection();
+   rs = db.data(sql);
+   rs.next();
+   r_name = rs.getString("r_name");
+   r_login_id = rs.getString("r_login_id");
+   r_email = rs.getString("r_email");
+   db.closeConnection();
+   }
+   
+   if(!(requpdate==null)){
+    if((r_login_id.equals("")) || (r_name.equals("")) || (r_email.equals(""))){
+     msg = "<div class='alert alert-warning col-sm-6 mt-2' role='alert'>Fill All Fileds</div>";
+    } else {
+     sql = "UPDATE requesterlogin_tb SET r_name = " + "\"" + r_name + "\"," + "r_email = +" + "\"" + r_email + "\"" + " WHERE r_login_id = " + "\"" + r_login_id + "\"";
+     db = new dbConnection();
+     int i = db.indata(sql);
+     db.closeConnection();
+     if(i==1000){
+        msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'>Unable to Update</div>";
+
+     } else {
+        msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'>Updated Successfully</div>";
+     }
+    }
+   }
+  %>
+  <form action="" method="POST">
+   <div class="form-group">
+    <label for="r_login_id">Requester ID</label>
+    <input type="text" class="form-control" name="id" id="r_login_id" Value="<%if(!(r_login_id.equals(""))){out.println(r_login_id);} %>" readonly>
+   </div>
+   <div class="form-group">
+    <label for="r_name">Name</label>
+    <input type="text" class="form-control" name="r_name" id="r_name" Value="<%if(!(r_name.equals(""))){out.println(r_name);} %>">
+   </div>
+   <div class="form-group">
+    <label for="r_email">Email</label>
+    <input type="text" class="form-control" name="r_email" id="r_email" Value="<%if(!(r_email.equals(""))){out.println(r_email);} %>">
+   </div>
+   <div class="text-center">
+    <button type="submit" class="btn btn-danger" id="requpdate" name="requpdate">Update</button>
+    <a href="requester.jsp" class="btn btn-secondary">Close</a>
+   </div>
+   <%if(!(msg.equals(""))){out.println(msg);}%>
+</form>
+ </div> <!-- End 2nd COlumn -->
+
+ <%@ include file = "includes/footer.jsp" %><!-- insertemp.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Update Technician";
+   String PAGE = "technician";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String empsubmit = request.getParameter("empsubmit");
+String empName = request.getParameter("empName");
+String empCity = request.getParameter("empCity");
+String empMobile = request.getParameter("empMobile");
+String empEmail = request.getParameter("empEmail");
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+
+ if(!(empsubmit == null)){
+
+  if((empName.equals("")) || (empCity.equals("")) || (empMobile.equals("")) || (empEmail.equals(""))){
+    msg = "<div class='alert alert-warning col-sm-6 ml-5 mt-2' role='alert'> Fill All Fileds </div>";
+  } else {
+   sql = "INSERT INTO technician_tb (empName, empCity, empMobile, empEmail) VALUES ('"+empName+"','"+empCity+"','"+empMobile+"','"+empEmail+"')";
+    db = new dbConnection();
+    int i = db.indata(sql);
+    db.closeConnection();
+    if(i==1000){
+      msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'> Unable to Add </div>";
+    } else {
+     msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'> Added Successfully </div>";
+
+    }
+  }
+  }
+ %>
+<!-- Start 2nd Column -->
+<div class="col-sm-6 mt-5  mx-3 jumbotron">
+  <h3 class="text-center">Add New Technician</h3>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="empName">Name</label>
+      <input type="text" class="form-control" id="empName" name="empName">
+    </div>
+    <div class="form-group">
+      <label for="empCity">City</label>
+      <input type="text" class="form-control" id="empCity" name="empCity">
+    </div>
+    <div class="form-group">
+      <label for="empMobile">Mobile</label>
+      <input type="text" class="form-control" id="empMobile" name="empMobile" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="empEmail">Email</label>
+      <input type="email" class="form-control" id="empEmail" name="empEmail">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="empsubmit" name="empsubmit">Submit</button>
+      <a href="technician.php" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<!-- Only Number for input fields -->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script>
+<%@ include file = "includes/footer.jsp" %><!-- insertreq.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Update Requester";
+   String PAGE = "requesters";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String r_name = request.getParameter("r_name");
+String r_login_id = request.getParameter("id");
+String r_email = request.getParameter("r_email");
+String r_password = request.getParameter("r_password");
+String edit = request.getParameter("edit");
+String reqsubmit = request.getParameter("reqsubmit");
+
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+if(!(reqsubmit == null)){
+  if((r_password.equals("")) || (r_name.equals("")) || (r_email.equals(""))){
+    msg = "<div class='alert alert-warning col-sm-6 mt-2' role='alert'> Fill All Fileds </div>";
+  } else {
+    sql = "INSERT INTO requesterlogin_tb (r_name, r_email, r_password) VALUES ('"+r_name+"','"+r_email+"','"+r_password+"')";
+    db = new dbConnection();
+    int i = db.indata(sql);
+    db.closeConnection();
+    if(i==1000){
+      msg = "<div class='alert alert-danger col-sm-6 mt-2' role='alert'> Unable to Add </div>";
+    } else {
+      msg = "<div class='alert alert-success col-sm-6 mt-2' role='alert'> Added Successfully </div>";
+    }
+  }
+  }
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-6 mt-5  mx-3 jumbotron">
+  <h3 class="text-center">Add New Requester</h3>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="r_name">Name</label>
+      <input type="text" class="form-control" id="r_name" name="r_name">
+    </div>
+    <div class="form-group">
+      <label for="r_email">Email</label>
+      <input type="email" class="form-control" id="r_email" name="r_email">
+    </div>
+    <div class="form-group">
+      <label for="r_password">Password</label>
+      <input type="password" class="form-control" id="r_password" name="r_password">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="reqsubmit" name="reqsubmit">Submit</button>
+      <a href="requester.jsp" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<%@ include file = "includes/footer.jsp" %>
+<!-- login.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+ Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+ String aEmail = request.getParameter("aEmail");
+ String aPassword = request.getParameter("aPassword");
+ String sql;
+ String msg = "";
+ dbConnection db = null;
+ ResultSet rs = null;
+ if(is_adminlogin == null){
+  if(!(aEmail == null)){
+    db = new dbConnection();
+    sql = "SELECT a_email, a_password FROM adminlogin_tb WHERE a_email = " + "\"" + aEmail + "\"" + " AND a_password = "+ "\"" + aPassword + "\"";
+    rs = db.data(sql);
+    if(rs.next()){
+        session.setAttribute("is_adminlogin", 1);
+        session.setAttribute("aEmail", aEmail);
+        response.sendRedirect("dashboard.jsp");
+        db.closeConnection();
+    } else {
+        msg = "<div class='alert alert-warning mt-2'>Enter Valid Email and Password</div>";
+    }
+  }
+ } else {
+    response.sendRedirect("dashboard.jsp");
+ }
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta http-equiv="X-UA-Compatible" content="ie=edge">
+ <!-- Bootstrap CSS -->
+ <link rel="stylesheet" href="../css/bootstrap.min.css">
+
+ <!-- Font Awesome CSS -->
+ <link rel="stylesheet" href="../css/all.min.css">
+
+ <style>
+  .custom-margin {
+   margin-top: 8vh;
+  }
+ </style>
+
+ <title>Login</title>
+</head>
+<body>
+ <div class="mb-3 mt-5 text-center" style="font-size: 30px;">
+  <i class="fas fa-stethoscope"></i>
+  <span>Online Service Management System</span>
+ </div>
+ <p class="text-center" style="font-size:20px;"><i class="fas fa-user-secret text-danger"></i>Admin Area (Demo)</p>
+ <div class="container-fluid">
+  <div class="row justify-content-center custom-margin">
+   <div class="col-sm-6 col-md-4">
+    <form action="" class="shadow-lg p-4" method="POST">
+     <div class="form-group">
+      <i class="fas fa-user"></i><label for="email" class="font-weight-bold pl-2">Email</label><input type="email" class="form-control" placeholder="Email" name="aEmail">
+      <small class="form-text">We'll never share your email with anyone else.</small>
+     </div>
+     <div class="form-group">
+      <i class="fas fa-key"></i><label for="pass" class="font-weight-bold pl-2">Password</label><input type="password" class="form-control" placeholder="Password" name="aPassword">
+     </div>
+     <button type="submit" class="btn btn-outline-dark mt-3 font-weight-bold btn-block shadow-sm">Login</button>
+     <%if(!(msg.equals(""))){out.println(msg);}%>
+    </form>
+    <div class="text-center"><a href="../index.php" class="btn btn-info mt-3 font-weight-bold shadow-sm">Back to Home</a></div>
+   </div>
+  </div>
+ </div>
+
+ <!-- JavaScript Files -->
+ <script src="../js/jquery.min.js"></script>
+ <script src="../js/popper.min.js"></script>
+ <script src="../js/bootstrap.min.js"></script>
+ <script src="../js/all.min.js"></script>
+</body>
+</html><!-- productsellsuccess.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Sell Product";
+   String PAGE = "assets";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+int myid = (int)session.getAttribute("myid");
+dbConnection db = null;
+ResultSet rs = null;
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+
+sql = "SELECT * FROM customer_tb WHERE custid = " + "\"" + myid + "\"";
+db = new dbConnection();
+rs = db.data(sql);
+if(rs.next()){
+  int custid = rs.getInt("custid");
+  String custname = rs.getString("custname");
+  String custadd = rs.getString("custadd");
+  String cpname = rs.getString("cpname");
+  String cpquantity = rs.getString("cpquantity");
+  String cpeach = rs.getString("cpeach");
+  String cptotal = rs.getString("cptotal");
+  String cpdate = rs.getString("cpdate");
+  db.closeConnection();
+%>
+ <div class='ml-5 mt-5'>
+ <h3 class='text-center'>Customer Bill</h3>
+ <table class='table'>
+  <tbody>
+  <tr>
+    <th>Customer ID</th>
+    <td><%=custid%></td>
+  </tr>
+   <tr>
+     <th>Customer Name</th>
+     <td><%=custname%></td>
+   </tr>
+   <tr>
+     <th>Address</th>
+     <td><%=custadd%></td>
+   </tr>
+   <tr>
+   <th>Product</th>
+   <td><%=cpname%></td>
+  </tr>
+   <tr>
+    <th>Quantity</th>
+    <td><%=cpquantity%></td>
+   </tr>
+   <tr>
+    <th>Price Each</th>
+    <td><%=cpeach%></td>
+   </tr>
+   <tr>
+    <th>Total Cost</th>
+    <td><%=cptotal%></td>
+   </tr>
+   <tr>
+   <th>Date</th>
+   <td><%=cpdate%></td>
+  </tr>
+   <tr>
+    <td><form class='d-print-none'><input class='btn btn-danger' type='submit' value='Print' onClick='window.print()'></form></td>
+    <td><a href='assets.jsp' class='btn btn-secondary d-print-none'>Close</a></td>
+  </tr>
+  </tbody>
+ </table> </div>
+<%} else {
+  out.println("Failed");
+}
+%>
+<%@ include file = "includes/footer.jsp" %><!-- request.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Requests";
+   String PAGE = "request";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+int submitrequest = 0;
+int assignwork = 0;
+int totaltech = 0;
+String del = "";
+if(is_adminlogin == null){
+   response.sendRedirect("login.jsp");
+ } else {
+   aEmail = (String)session.getAttribute("aEmail");
+ }
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-4 mb-5">
+ <%
+  sql = "SELECT request_id, request_info, request_desc, request_date FROM submitrequest_tb";
+  db = new dbConnection();
+  rs = db.data(sql);
+   while(rs.next()){
+      int request_id = rs.getInt("request_id");
+      String request_info = rs.getString("request_info");
+      String request_desc = rs.getString("request_desc");
+      String request_date = rs.getString("request_date");
+      %>
+    <div class="card mt-5 mx-5">
+     <div class="card-header">
+      Request ID:<%=request_id%>
+     </div>
+     <div class="card-body">
+      <h5 class="card-title">Request Info: <%=request_info%>
+      </h5>
+      <p class="card-text"><%=request_desc%>
+      </p>
+      <p class="card-text">Request Date: <%=request_date%>
+      </p>
+      <div class="">
+       <form action="" method="POST">
+        <input type="hidden" name="id" value="<%=request_id%>">
+        <input type="submit" class="btn btn-danger mr-3" value="View" name="view">
+        <input type="submit" class="btn btn-secondary" value="Close" name="close">
+        <%if(!(del.equals(""))){out.println(del);}%>
+       </form>
+      </div>
+     </div>
+    </div>
+   <%}
+   db.closeConnection();
+ %>
+</div> <!-- End 2nd Column -->
+<%@ include file = "assignworkform.jsp" %>
+<%@ include file = "includes/footer.jsp" %><!-- requester.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Requesters";
+   String PAGE = "requesters";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String r_name = request.getParameter("r_name");
+String r_login_id = request.getParameter("r_login_id");
+String r_email = request.getParameter("r_email");
+String delete = request.getParameter("delete");
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-9 col-md-10 mt-5 text-center">
+ <p class="bg-dark text-white p-2">List of Requesters</p>
+ <table class="table"> 
+   <thead> 
+    <tr> 
+     <th scope="col">Requester ID</th> 
+     <th scope="col">Name</th> 
+     <th scope="col">Email</th> 
+     <th scope="col">Action</th> 
+    </tr> 
+   </thead> 
+   <tbody> 
+ <%
+  sql = "SELECT * FROM requesterlogin_tb";
+  db = new dbConnection();
+  rs = db.data(sql); 
+     while(rs.next()){
+      r_name = rs.getString("r_name");
+      r_email = rs.getString("r_email");
+      r_login_id = rs.getString("r_login_id");
+
+   %>
+         <tr> 
+          <td><%=r_login_id%></td> 
+          <td><%=r_name%></td> 
+          <td><%=r_email%></td> 
+          <td> 
+           <form action="editreq.jsp" class="d-inline" method="POST"> 
+            <input type="hidden" name="id" value="<%=r_login_id%>"><button type="submit" class="btn btn-info mr-3" name="edit" value="Edit"><i class="fas fa-pen"></i></button> 
+           </form> 
+           <form action="" method="POST" class="d-inline"> 
+           <input type="hidden" name="id" value="<%=r_login_id%>"><button type="submit" class="btn btn-secondary mr-3" name="delete" value="Delete"><i class="far fa-trash-alt"></i></button> 
+          </form> 
+          </td> 
+         </tr> 
+     <%}
+     db.closeConnection();
+ %>
+</tbody> 
+</table> 
+</div>
+<%
+ if(!(delete==null)){
+ sql = "DELETE FROM requesterlogin_tb WHERE r_login_id = " + "\"" + r_login_id + "\"";
+ db = new dbConnection();
+ int i = db.indata(sql);
+ if(i==1000){
+  out.println("Unable to Delete"); 
+ } else {
+   response.sendRedirect("requester.jsp");
+}
+ }
+%>
+  </div> <!-- End Row -->
+  <div class="float-right"><a href="insertreq.jsp" class="btn btn-danger"><i class="fas fa-plus fa-2x"></i></a></div>
+ </div> <!-- End Container -->
+
+ 
+ <!-- JavaScript -->
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/popper.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/all.min.js"></script>
+ </body>
+</html><!-- sellproduct.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Sell Product";
+   String PAGE = "assets";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String id = request.getParameter("id");
+String psubmit = request.getParameter("psubmit");
+String msg = "";
+
+String pid = request.getParameter("id");
+String cname = "";
+String cadd = "";
+String pname = "";
+String pquantity = "";
+String psellingcost = "";
+String totalcost = "";
+String selldate = "";
+String pava = "";
+int genid = 0;
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+
+if(!(psubmit == null)){
+  pava = request.getParameter("pava");
+  pquantity = request.getParameter("pquantity");
+  int temp = Integer.parseInt(pava) - Integer.parseInt(pquantity);
+  pava = String.valueOf(temp);
+  cname = request.getParameter("cname");
+  cadd = request.getParameter("cadd");
+  pname = request.getParameter("pname");
+  pquantity = request.getParameter("pquantity");
+  psellingcost = request.getParameter("psellingcost");
+  totalcost = request.getParameter("totalcost");
+  selldate = request.getParameter("selldate");
+
+ if((cname.equals("")) || (cadd.equals("")) || (pname.equals("")) || (pquantity.equals("")) || (psellingcost.equals("")) || (totalcost.equals("")) || (selldate.equals(""))){
+  msg = "<div class='alert alert-warning col-sm-6 ml-5 mt-2' role='alert'> Fill All Fileds </div>";
+ } else {
+  sql = "INSERT INTO customer_tb (custname, custadd, cpname, cpquantity, cpeach, cptotal, cpdate) VALUES ('"+cname+"','"+cadd+"','"+pname+"','"+pquantity+"','"+psellingcost+"','"+totalcost+"','"+selldate+"')";
+  db = new dbConnection();
+  int i = db.indata(sql);
+  db.closeConnection();
+  if(!(i==1000)){
+    db = new dbConnection();
+    genid = db.get_id("SELECT count(*) as rowcount FROM customer_tb");
+    session.setAttribute("myid", genid);
+    db.closeConnection();
+    db = new dbConnection();
+    int j = db.indata("UPDATE assets_tb SET pava = " + "\"" + pava + "\"" + " WHERE pid = " + "\"" + pid + "\"");
+    db.closeConnection();
+    response.sendRedirect("productsellsuccess.jsp");
+  }
+ }
+} 
+%>
+
+<!-- Start 2nd Column -->
+<div class="col-sm-6 mt-5 mx-3 jumbotron">
+  <h3 class="text-center">Customer Bill</h3>
+  <%
+   if(!(request.getParameter("issue")==null)){
+   sql = "SELECT * FROM assets_tb WHERE pid =  " + "\"" + pid + "\"";
+   db = new dbConnection();
+   rs = db.data(sql);
+   rs.next();
+   pname = rs.getString("pname");
+   pava = rs.getString("pava");
+   psellingcost = rs.getString("psellingcost");
+    db.closeConnection();
+   }
+  %>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label for="pid">Product ID</label>
+      <input type="text" class="form-control" id="pid" name="id" value="<%=pid%>" readonly>
+    </div>
+    <div class="form-group">
+      <label for="cname">Customer Name</label>
+      <input type="text" class="form-control" id="cname" name="cname">
+    </div>
+    <div class="form-group">
+      <label for="cadd">Customer Address</label>
+      <input type="text" class="form-control" id="cadd" name="cadd">
+    </div>
+    <div class="form-group">
+      <label for="pname">Product Name</label>
+      <input type="text" class="form-control" id="pname" name="pname" value="<%=pname%>">
+    </div>
+    <div class="form-group">
+      <label for="pava">Available</label>
+      <input type="text" class="form-control" id="pava" name="pava" onkeypress="isInputNumber(event)" value="<%=pava%>" readonly>
+    </div>
+    <div class="form-group">
+      <label for="pquantity">Quantity</label>
+      <input type="text" class="form-control" id="pquantity" name="pquantity" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group">
+      <label for="psellingcost">Price Each</label>
+      <input type="text" class="form-control" id="psellingcost" name="psellingcost" onkeypress="isInputNumber(event)" value="<%=psellingcost%>">
+    </div>
+    <div class="form-group">
+      <label for="totalcost">Total Price</label>
+      <input type="text" class="form-control" id="totalcost" name="totalcost" onkeypress="isInputNumber(event)">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="inputDate">Date</label>
+      <input type="date" class="form-control" id="inputDate" name="selldate">
+    </div>
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger" id="psubmit" name="psubmit">Submit</button>
+      <a href="assets.php" class="btn btn-secondary">Close</a>
+    </div>
+    <%if(!(msg.equals(""))){out.println(msg);}%>
+  </form>
+</div>
+<!-- Only Number for input fields -->
+<script>
+  function isInputNumber(evt) {
+    var ch = String.fromCharCode(evt.which);
+    if (!(/[0-9]/.test(ch))) {
+      evt.preventDefault();
+    }
+  }
+</script>
+<%@ include file = "includes/footer.jsp" %><!-- soldproductreport.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Product Report";
+   String PAGE = "sellreport";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String custid = request.getParameter("custid");
+String custname = request.getParameter("custname");
+String custadd = request.getParameter("custadd");
+String cpname = request.getParameter("cpname");
+String cpquantity = request.getParameter("cpquantity");
+String cpeach = request.getParameter("cpeach");
+String cptotal = request.getParameter("cptotal");
+String cpdate = request.getParameter("cpdate");
+
+String searchsubmit = request.getParameter("searchsubmit");
+String startdate = request.getParameter("startdate");
+String enddate = request.getParameter("enddate");;
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+%>
+
+<!-- Start 2nd Column -->
+<div class="col-sm-9 col-md-10 mt-5 text-center">
+  <form action="" method="POST" class="d-print-none">
+    <div class="form-row">
+      <div class="form-group col-md-2">
+        <input type="date" class="form-control" id="startdate" name="startdate">
+      </div> <span> to </span>
+      <div class="form-group col-md-2">
+        <input type="date" class="form-control" id="enddate" name="enddate">
+      </div>
+      <div class="form-group">
+        <input type="submit" class="btn btn-secondary" name="searchsubmit" value="Search">
+      </div>
+    </div>
+  </form>
+  <p class="bg-dark text-white p-2 mt-4">Details</p> 
+      <table class="table"> 
+       <thead> 
+        <tr> 
+         <th scope="col">Customer ID</th> 
+         <th scope="col">Customer Name</th> 
+         <th scope="col">Address</th> 
+         <th scope="col">Product Name</th> 
+         <th scope="col">Quantity</th> 
+         <th scope="col">Price Each</th> 
+         <th scope="col">Total</th> 
+         <th scope="col">Date</th> 
+        </tr> 
+       </thead> 
+       <tbody> 
+  <%
+   if(!(searchsubmit == null)){
+    sql = "SELECT * FROM customer_tb WHERE cpdate BETWEEN " + "\"" +  startdate + "\"" + " AND " + "\"" +enddate + "\"";
+    db = new dbConnection();
+    rs = db.data(sql);
+      while(rs.next()){
+          custid = rs.getString("custid");
+          custname = rs.getString("custname");
+          custadd = rs.getString("custadd");
+          cpname = rs.getString("cpname");
+          cpquantity = rs.getString("cpquantity");
+          cpeach = rs.getString("cpeach");
+          cptotal = rs.getString("cptotal");
+          cpdate = rs.getString("cpdate");
+      %>
+        <tr> 
+         <td><%=custid%></td> 
+         <td><%=custname%></td> 
+         <td><%=custadd%></td> 
+         <td><%=cpname%></td> 
+         <td><%=cpquantity%></td> 
+         <td><%=cpeach%></td> 
+         <td><%=cptotal%></td> 
+         <td><%=cpdate%></td> 
+         <td><%=custid%></td> 
+        </tr> 
+      <%}db.closeConnection();}%>
+       <tr> 
+        <td> 
+         <input type="submit" class="btn btn-danger d-print-none" value="Print" onClick="window.print()"> 
+        </td> 
+       </tr> 
+       </tbody> 
+      </table> 
+</div>
+
+<%@ include file = "includes/footer.jsp" %><!-- technician.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Technician";
+   String PAGE = "technician";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String delete = request.getParameter("delete");
+String id = request.getParameter("id");
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+%>
+<!-- Start 2nd Column -->
+<div class="col-sm-9 col-md-10 mt-5 text-center">
+ <p class="bg-dark text-white p-2">List of Technician</p>
+ <table class="table">
+   <thead>
+    <tr>
+     <th scope="col">Emp ID</th>
+     <th scope="col">Name</th>
+     <th scope="col">City</th>
+     <th scope="col">Mobile</th>
+     <th scope="col">Email</th>
+     <th scope="col">Action</th>
+    </tr>
+   </thead>
+   <tbody>
+ <%
+  sql = "SELECT * FROM technician_tb"; 
+   db = new dbConnection();
+   rs = db.data(sql);
+   while(rs.next()){
+      String empid = rs.getString("empid");
+      String empName = rs.getString("empName");
+      String empCity = rs.getString("empCity");
+      String empMobile = rs.getString("empMobile");
+      String empEmail = rs.getString("empEmail");
+ %>
+   
+   <tr>
+      <td><%=empid%></td>
+      <td><%=empName%></td>
+      <td><%=empCity%></td>
+      <td><%=empMobile%></td>
+      <td><%=empEmail%></td>
+      <td>
+         <form action="editemp.jsp" class="d-inline" method="POST">
+         <input type="hidden" name="id" value="<%=empid%>"><button type="submit" class="btn btn-info mr-3" name="edit" value="Edit"><i class="fas fa-pen"></i></button>
+         </form>
+         <form action="" method="POST" class="d-inline">
+         <input type="hidden" name="id" value="<%=empid%>"><button type="submit" class="btn btn-secondary mr-3" name="delete" value="Delete"><i class="far fa-trash-alt"></i></button>
+         </form>
+      </td>
+   </tr>
+   
+   <%}
+   db.closeConnection();
+ %>
+</tbody>
+</table>
+</div>
+<%
+ if(!(delete == null)){
+ sql = "DELETE FROM technician_tb WHERE empid = " + "\"" + id + "\"";
+ db = new dbConnection();
+ int i = db.indata(sql);
+ db.closeConnection();
+ if(i == 1000){
+   out.println("Unable to Delete");
+ } else {
+   response.sendRedirect("technician.jsp");
+ }
+ }
+%>
+  </div> <!-- End Row -->
+  <div class="float-right"><a href="insertemp.jsp" class="btn btn-danger"><i class="fas fa-plus fa-2x"></i></a></div>
+ </div> <!-- End Container -->
+
+ <!-- JavaScript -->
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/popper.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/all.min.js"></script>
+ </body>
+</html><!-- viewassignwork.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Work Order";
+   String PAGE = "work";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String view = request.getParameter("view");
+String id = request.getParameter("id");
+if(is_adminlogin == null){
+   response.sendRedirect("login.jsp");
+ } else {
+   aEmail = (String)session.getAttribute("aEmail");
+ }
+%>
+<!-- Start 2nd COlumn -->
+<div class="col-sm-6 mt-5 mx-3">
+ <h3 class="text-center">Assigned Work Details</h3>
+ <%
+  if(!(view == null)){
+   sql = "SELECT * FROM assignwork_tb WHERE request_id = " + "\"" + id + "\"";
+   db = new dbConnection();
+   rs = db.data(sql);
+   if(rs.next()){ 
+    String request_id = rs.getString("request_id");
+    String request_info = rs.getString("request_info");
+    String request_desc = rs.getString("request_desc");
+    String requester_name = rs.getString("requester_name");
+    String requester_add1 = rs.getString("requester_add1");
+    String requester_add2 = rs.getString("requester_add2");
+    String requester_city = rs.getString("requester_city");
+    String requester_state = rs.getString("requester_state");
+    String requester_zip = rs.getString("requester_zip");
+    String requester_email = rs.getString("requester_email");
+    String requester_mobile = rs.getString("requester_mobile");
+    String assign_date = rs.getString("assign_date");
+    String assign_tech = rs.getString("assign_tech");
+    db.closeConnection();
+  %>
+  <table class="table table-bordered">
+   <tbody>
+    <tr>
+     <td>Request ID</td>
+     <td><%if(!(request_id.equals(""))){out.println(request_id);} %></td>
+    </tr>
+    <tr>
+     <td>Request Info</td>
+     <td><%if(!(request_info.equals(""))){out.println(request_info);} %></td>
+    </tr>
+    <tr>
+     <td>Request Description</td>
+     <td><%if(!(request_desc.equals(""))){out.println(request_desc);} %></td>
+    </tr>
+    <tr>
+     <td>Name</td>
+     <td>
+       <%if(!(requester_name.equals(""))){out.println(requester_name);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Address Line 1</td>
+     <td>
+       <%if(!(requester_add1.equals(""))){out.println(requester_add1);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Address Line 2</td>
+     <td>
+      <%if(!(requester_add2.equals(""))){out.println(requester_add2);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>City</td>
+     <td>
+      <%if(!(requester_city.equals(""))){out.println(requester_city);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>State</td>
+     <td>
+      <%if(!(requester_state.equals(""))){out.println(requester_state);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Pin Code</td>
+     <td>
+      <%if(!(requester_zip.equals(""))){out.println(requester_zip);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Email</td>
+     <td>
+      <%if(!(requester_email.equals(""))){out.println(requester_email);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Mobile</td>
+     <td>
+      <%if(!(requester_mobile.equals(""))){out.println(requester_mobile);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Assigned Date</td>
+     <td>
+      <%if(!(assign_date.equals(""))){out.println(assign_date);} %>
+     </td>
+    </tr>
+    <tr>
+     <td>Technician Name</td>
+     <td><%if(!(assign_tech.equals(""))){out.println(assign_tech);} %></td>
+    </tr>
+    <tr>
+     <td>Customer Sign</td>
+     <td></td>
+    </tr>
+    <tr>
+     <td>Technician Sign</td>
+     <td></td>
+    </tr>
+   </tbody>
+  </table>
+    <div class="text-center">
+     <form action="" class="mb-3 d-print-none d-inline">
+      <input class="btn btn-danger" type="submit" value="Print" onClick="window.print()"> </form>
+      <form action="work.jsp" class="mb-3 d-print-none d-inline"><input class="btn btn-secondary" type="submit" value="Close">
+     </form>
+    </div>
+ <% }} %>
+</div>
+<!-- End 2nd COlumn -->
+<%@ include file = "includes/footer.jsp" %><!-- work.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Work Order";
+   String PAGE = "work";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String id = request.getParameter("id");
+String delete = request.getParameter("delete");
+if(is_adminlogin == null){
+   response.sendRedirect("login.jsp");
+ } else {
+   aEmail = (String)session.getAttribute("aEmail");
+ }
+%>
+<!-- Start 2nd COlumn -->
+<div class="col-sm-9 col-md-10 mt-5">
+   <table class="table">
+      <thead>
+       <tr>
+        <th scope="col">Req ID</th>
+        <th scope="col">Req Info</th>
+        <th scope="col">Name</th>
+        <th scope="col">Address</th>
+        <th scope="col">City</th>
+        <th scope="col">Mobile</th>
+        <th scope="col">Technician</th>
+        <th scope="col">Assigned Date</th>
+        <th scope="col">Action</th>
+       </tr>
+      </thead>
+      <tbody>
+      <%
+         sql = "SELECT * FROM assignwork_tb";
+         db = new dbConnection();
+         rs = db.data(sql);
+         while(rs.next()) {
+            int request_id = rs.getInt("request_id");
+            String request_info = rs.getString("request_info");
+            String requester_name = rs.getString("requester_name");
+            String requester_add2 = rs.getString("requester_add2");
+            String requester_city = rs.getString("requester_city");
+            String requester_mobile = rs.getString("requester_mobile");
+            String assign_tech = rs.getString("assign_tech");
+            String assign_date = rs.getString("assign_date");
+      %>
+
+      <tr>
+         <td><%=request_id%></td>
+         <td><%=request_info%></td>
+         <td><%=requester_name%></td>
+         <td><%=requester_add2%></td>
+         <td><%=requester_city%></td>
+         <td><%=requester_mobile%></td>
+         <td><%=assign_tech%></td>
+         <td><%=assign_date%></td>
+         <td>
+        <form action="viewassignwork.jsp" method="POST" class="d-inline mr-2">
+         <input type="hidden" name="id" value="<%=request_id%>"><button class="btn btn-warning" name="view" value="View" type="submit"><i class="far fa-eye"></i></button>
+        </form>
+        <form action="" method="POST" class="d-inline">
+        <input type="hidden" name="id" value="<%=request_id%>"><button class="btn btn-secondary" name="delete" value="Delete" type="submit"><i class="far fa-trash-alt"></i></button>
+       </form>
+       </td>
+      </tr>
+   <%
+   }
+   db.closeConnection();
+  if(!(delete == null)){
+  sql= "DELETE FROM assignwork_tb WHERE request_id = " + "\"" + id + "\"";
+  db = new dbConnection();
+  int i = db.indata(sql);
+  db.closeConnection();
+  if(i==1000){
+     out.println("Unable to delete data");
+  } else {
+     response.sendRedirect("work.jsp");
+  }
+  }
+ %>
+</tbody>
+</table>
+</div> <!-- End 2nd COlumn -->
+<%@ include file = "includes/footer.jsp" %><!-- workreport.jsp -->
+<%@page import="SCMS.dbConnection"%>
+<%@page import="java.util.*, java.sql.*"%>
+<% 
+   String TITLE = "Work Report";
+   String PAGE = "workreport";
+%>
+<%@ include file="includes/header.jsp"%>
+
+<%
+Integer is_adminlogin = (Integer)session.getAttribute("is_adminlogin");
+String aEmail = "";
+String sql= "";
+dbConnection db = null;
+ResultSet rs = null;
+String msg = "";
+String request_id = request.getParameter("request_id");
+String request_info = request.getParameter("request_info");
+String requester_name = request.getParameter("requester_name");
+String requester_add2 = request.getParameter("requester_add2");
+String requester_city = request.getParameter("requester_city");
+String requester_mobile = request.getParameter("requester_mobile");
+String assign_tech = request.getParameter("assign_tech");
+String assign_date = request.getParameter("assign_date");
+
+String startdate = request.getParameter("startdate");
+String enddate = request.getParameter("enddate");
+
+String searchsubmit = request.getParameter("searchsubmit");
+
+
+if(is_adminlogin == null){
+  response.sendRedirect("login.jsp");
+} else {
+  aEmail = (String)session.getAttribute("aEmail");
+}
+%>
+
+<!-- Start 2nd Column -->
+<div class="col-sm-9 col-md-10 mt-5 text-center">
+  <form action="" method="POST" class="d-print-none">
+    <div class="form-row">
+      <div class="form-group col-md-2">
+        <input type="date" class="form-control" id="startdate" name="startdate">
+      </div> <span> to </span>
+      <div class="form-group col-md-2">
+        <input type="date" class="form-control" id="enddate" name="enddate">
+      </div>
+      <div class="form-group">
+        <input type="submit" class="btn btn-secondary" name="searchsubmit" value="Search">
+      </div>
+    </div>
+  </form>
+  <p class="bg-dark text-white p-2 mt-4">Details</p>  
+       <table class="table">  
+        <thead>  
+         <tr>  
+          <th scope="col">Req ID</th>  
+          <th scope="col">Request Info</th>  
+          <th scope="col">Name</th>  
+          <th scope="col">Address</th>  
+          <th scope="col">City</th>  
+          <th scope="col">Mobile</th>  
+          <th scope="col">Technician</th>  
+          <th scope="col">Assigned Date</th>  
+         </tr>  
+        </thead>  
+        <tbody>
+  <%
+   if(!(searchsubmit == null)){
+    sql = "SELECT * FROM assignwork_tb WHERE assign_date BETWEEN " + "\"" +  startdate + "\"" + " AND " + "\"" +enddate + "\"";
+    db = new dbConnection();
+    rs = db.data(sql);
+      while(rs.next()){
+        request_id = rs.getString("request_id");
+        request_info = rs.getString("request_info");
+        requester_name = rs.getString("requester_name");
+        requester_add2 = rs.getString("requester_add2");
+        requester_city = rs.getString("requester_city");
+        requester_mobile = rs.getString("requester_mobile");
+        assign_tech = rs.getString("assign_tech");
+        assign_date = rs.getString("assign_date");
+  %>
+         <tr>  
+          <td><%=request_id%></td>  
+          <td><%=request_info%></td>  
+          <td><%=requester_name%></td>  
+          <td><%=requester_add2%></td>  
+          <td><%=requester_city%></td>  
+          <td><%=requester_mobile%></td>  
+          <td><%=assign_tech%></td>  
+          <td><%=assign_date%></td>  
+         </tr>  
+      <%} db.closeConnection();}%>
+        <tr>  
+         <td>  
+          <input type="submit" class="btn btn-danger d-print-none" value="Print" onClick="window.print()">  
+         </td>  
+        </tr>  
+        </tbody>  
+       </table>  
+</div>
+
+
+<%@ include file = "includes/footer.jsp" %>
